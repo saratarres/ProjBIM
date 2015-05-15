@@ -1,3 +1,8 @@
+#------------------------------------------------------------------------------#
+#																			   #
+#								  AMIBES							  		   #
+#																			   #
+#------------------------------------------------------------------------------#
 
 N = 'normal'
 V = 'vibration'
@@ -30,6 +35,8 @@ class Amibes :
 		#Temps de recherche maximal de nourriture
 		self.tmax = tmax
 
+	def __str__(self) :
+		return "L'amibe est en position (%d - %d) et est dans l'état %s"%(self.x, self.y, self.etat_actuel)
 
 #Fonctions qui permet de bouger en fonction du poids des matrices autour. En sachant qu'on 
 #a pas a gerer les effets de bords car on a dit qu'on mettrais 0 partout ailleurs
@@ -39,55 +46,59 @@ class Amibes :
 
 
 	def bouger (self,grille):
-		temp = 0
-		xtemp = self.x
-		ytemp = self.y
+		if grille[self.x][self.y] != 100 : # Si l'amibe a trouve la nourriture, elle ne bouge plus
 
-		if (grille[self.x+1][self.y] > temp and grille[self.x+1][self.y]!=o):
-			temp = grille[self.x+1][self.y]
-			xtemp = self.x+1
-			ytemp = self.y
-
-		if (grille[self.x+1][self.y-1] > temp and grille[self.x+1][self.y-1]!=o):
-			temp = grille[self.x+1][self.y-1]
-			xtemp = self.x+1
-			ytemp = self.y-1
-
-		if (grille[self.x][self.y-1]>temp and grille[self.x][self.y-1]!=o):
-			temp = grille[self.x][self.y-1]
+			temp = 0
 			xtemp = self.x
-			ytemp = self.y-1
-
-		if (grille[self.x-1][self.y-1]>temp and grille[self.x-1][self.y-1]!=o):
-			temp = grille[self.x-1][self.y-1]
-			xtemp = self.x-1
-			ytemp = self.y-1
-
-		if (grille[self.x-1][self.y]>temp and grille[self.x-1][self.y]!=o):
-			temp = grille[self.x-1][self.y]
-			xtemp = self.x-1
 			ytemp = self.y
+		
+
+			if (grille[self.x+1][self.y] > temp and grille[self.x+1][self.y]!=o):
+				temp = grille[self.x+1][self.y]
+				xtemp = self.x+1
+				ytemp = self.y
+
+			if (grille[self.x+1][self.y-1] > temp and grille[self.x+1][self.y-1]!=o):
+				temp = grille[self.x+1][self.y-1]
+				xtemp = self.x+1
+				ytemp = self.y-1
+
+			if (grille[self.x][self.y-1]>temp and grille[self.x][self.y-1]!=o):
+				temp = grille[self.x][self.y-1]
+				xtemp = self.x
+				ytemp = self.y-1
+
+			if (grille[self.x-1][self.y-1]>temp and grille[self.x-1][self.y-1]!=o):
+				temp = grille[self.x-1][self.y-1]
+				xtemp = self.x-1
+				ytemp = self.y-1
+
+			if (grille[self.x-1][self.y]>temp and grille[self.x-1][self.y]!=o):
+				temp = grille[self.x-1][self.y]
+				xtemp = self.x-1
+				ytemp = self.y
 
 		
-		if (grille[self.x-1][self.y+1]>temp and grille[self.x-1][self.y+1]!=o):
-			temp = grille[self.x-1][self.y+1]
-			xtemp = self.x-1
-			ytemp = self.y+1
+			if (grille[self.x-1][self.y+1]>temp and grille[self.x-1][self.y+1]!=o):
+				temp = grille[self.x-1][self.y+1]
+				xtemp = self.x-1
+				ytemp = self.y+1
 
-		if (grille[self.x][self.y+1]>temp and grille[self.x][self.y+1]!=o):
-			temp = grille[self.x][self.y+1]
-			xtemp = self.x
-			ytemp = self.y+1
+			if (grille[self.x][self.y+1]>temp and grille[self.x][self.y+1]!=o):
+				temp = grille[self.x][self.y+1]
+				xtemp = self.x
+				ytemp = self.y+1
 
-		if (grille[self.x+1][self.y+1]>temp and grille[self.x+1][self.y+1]!=o):
-			temp = grille[self.x+1][self.y+1]
-			xtemp = self.x+1
-			ytemp = self.y+1
+			if (grille[self.x+1][self.y+1]>temp and grille[self.x+1][self.y+1]!=o):
+				temp = grille[self.x+1][self.y+1]
+				xtemp = self.x+1
+				ytemp = self.y+1
 
-		print "La plus grande valeur est" , temp , "de coordonnee", xtemp,ytemp
+			#print "La plus grande valeur est" , temp , "de coordonnee", xtemp,ytemp
 
-		self.x = xtemp
-		self.y = ytemp
+			self.x = xtemp
+			self.y = ytemp
+
 
 
 ### Methodes qui va faire que l'amibe va rentrer dans un etat de stress
