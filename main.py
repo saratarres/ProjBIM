@@ -52,8 +52,11 @@ PN = 'periode de nourriture'
 S = 'stress'
 F = 'famine'
 
-h = 1000 #!!! taille de la grille (il faut qua ca soit un multiple de 5)
-w = 500 #!!! taille de la grille (il faut qua ca soit un multiple de 5)
+# x est en ordonnee !!
+# y est en abscisse !!
+# (0,0) est en haut a gauche
+xmax = 150 #!!! taille de la grille (il faut qua ca soit un multiple de 5) #X
+ymax = 80 #!!! taille de la grille (il faut qua ca soit un multiple de 5) #Y
 pixel = 10
 
 # Definition des params de la grille
@@ -69,14 +72,15 @@ nbn_F = 0 # nombre de nourriture dans le mode F
 
 class Amibes : 
 
-	def __init__(self,r,x,y):
+	def __init__(self):
 
 		#Rayon de perception )= rp
-		self.rp= r
+		#self.rp= r
 
 		#Position x et y initial de l'amibe 
-		self.x = x
-		self.y=y
+		self.x = randint(0,xmax/pixel-1)
+		self.y = randint(0,ymax/pixel-1)
+		self.setPos(Env)
 
 		#Etat dans lequel elle peut se trouver 
 		self.etats = [N,V,D,M]
@@ -102,6 +106,10 @@ class Amibes :
 	#Egaux de chaque cote. Je ne me souviens plus trop de ce qu'on avait convenu comme marche a suivre
 	#J'ai gerer le fait qu'il puisse y avoir un obstacle
 
+	def setPos(self,Envir):
+		while Envir.grille[self.x][self.y] == 0 or Envir.grille[self.x][self.y] == 100:
+		 	self.x = randint(0,xmax/pixel-1)
+		 	self.y = randint(0,ymax/pixel-1)
 
 	def bouger (self,Envir):
 		if self.etat_actuel[0] == N:
@@ -152,6 +160,7 @@ class Amibes :
 
 		a = randint(-1,1)
 		b = randint(-1,1)
+
 		newX = xt + a 
 		newY = yt + b 
 		if newX<0: 
@@ -177,7 +186,7 @@ class Amibes :
 				self.boole=True
 	def vibre(self,a,b,vrai):
 		if vrai==True:
-			if a < h/pixel - 1:
+			if a < xmax/pixel - 1:
 				self.x = a + 1
 			else:
 				self.x = a
@@ -203,15 +212,14 @@ class Amibes :
 
 
 class Envir:
-
-	def __init__ (self, h, w, mode):
+	def __init__ (self, xmax, ymax, mode):
 		# Initialisation de la taille de la grille
 		# On cree des case de taille 5x5
-		self.h = h/pixel
-		self.w = w/pixel
+		self.xmax = xmax/pixel 
+		self.ymax = ymax/pixel
 
 		# Initialisation de la grille avec des 1
-		self.grille = [[1 for a in range(self.w)] for b in range(self.h)]
+		self.grille = [[1 for a in range(self.ymax)] for b in range(self.xmax)]
 
 		# Initialisation du mode de la grille : 3 possibilites (PN, S, F)
 		self.mode = mode
@@ -240,8 +248,8 @@ class Envir:
 
 	def __str__(self): # permet d'afficher la grille avec un print env
 		s = str()
-		for i in range(self.h):
-			for j in range(self.w):
+		for i in range(self.xmax):
+			for j in range(self.ymax):
 				s += str(self.grille[i][j]) + "\t"
 			s += "\n"
 		return "La grille actuelle est\n%s"%s
@@ -249,8 +257,8 @@ class Envir:
 	def __rempliNourriture(self, nb):
 		v = nb
 		for i in xrange(nb) :
-			a = randint(0, (self.h - 1))
-			b = randint(0, (self.w - 1))
+			a = randint(0, (self.xmax - 1))
+			b = randint(0, (self.ymax - 1))
 
 			if self.grille[a][b]==0 or self.grille[a][b]==100 :
 				self.__rempliNourriture(v)				
@@ -265,8 +273,8 @@ class Envir:
 	def __rempliObstacle(self, nb):
 		val = nb
 		for i in xrange(nb) :
-			a = randint(0, (self.h - 1))
-			b = randint(0, (self.w - 1))
+			a = randint(0, (self.xmax - 1))
+			b = randint(0, (self.ymax - 1))
 
 			if self.grille[a][b] == 0 :
 				self.__rempliObstacle(val)
@@ -281,7 +289,7 @@ class Envir:
 			for j in xrange(b-2, b+3):
 
 				# La diffusion doit rester dans la grille 
-				if i>=0 and i<self.h and j>=0 and j<self.w :
+				if i>=0 and i<self.xmax and j>=0 and j<self.ymax :
 
 					# on rempli le premier cercle de diffusion (proche de la nourriture)
 					if abs(a-i)==1 or abs(b-j)==1 :
@@ -299,7 +307,7 @@ class Envir:
 		for i in xrange(a-2, a+3):
 			for j in xrange(b-2, b+3):
 				# La diffusion doit rester dans la grille 
-				if i>=0 and i<self.h and j>=0 and j<self.w :
+				if i>=0 and i<self.xmax and j>=0 and j<self.ymax :
 					self.grille[i][j] = 1
 
 ######################################### INTERFACE ############################
@@ -390,14 +398,23 @@ zone_dessin.pack()
 
  
 
+class Popu:
+
+	def __init__(self,n):
+		self.n = n
+		self.tabamibes = [Amibes() for a in range(n)]
+
 
 ##################################### MAIN ####################################
 
 
 #seed(0) # permet d'avoir toujours la meme grille 
 
-Env = Envir(h, w, PN)
-Ami = Amibes(5, 4, 3)
+Env = Envir(xmax, ymax, PN)
+print Env
+
+Ami = Amibes()
+print Ami
 
 for i in range(Env.h):
 	for j in range(Env.w):
@@ -429,5 +446,9 @@ root.mainloop()
 
 	
 
+print Env
 
-#print Env
+n = 10
+pop = Popu(n)
+for i in range(n):
+	print pop.tabamibes[i].x,pop.tabamibes[i].y
