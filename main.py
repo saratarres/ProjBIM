@@ -332,3 +332,5 @@ n = 10
 pop = Popu(n)
 for i in range(n):
 	print pop.tabamibes[i].x,pop.tabamibes[i].y
+	pop.tabamibes[i].bouger(Env)
+	print Ami

@@ -118,6 +118,17 @@ class Envir:
 							self.grille[i][j] = 25
 
 
+	# Methode associee a bouger pour remettre a 1 les cases ou l'amibe a bouffe la nourriture de la case (a,b)
+	def remettreAUnLesCasesJuxtaposee(self,a,b):
+		# on parcours le cercle de diffusion
+		for i in xrange(a-2, a+3):
+			for j in xrange(b-2, b+3):
+				# La diffusion doit rester dans la grille 
+				if i>=0 and i<self.h and j>=0 and j<self.w :
+					self.grille[i][j] = 1
+
+
+
 # Main test des methodes
 test = Envir(h, w, PN)
 print test
