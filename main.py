@@ -22,11 +22,15 @@
 ## et elle va reprendre son chemin aleatoire. etc etc
 
 from random import*
+from Tkinter import *
+from PIL import ImageTk, Image
+from PyQt4 import QtGui, QtCore
+import tkFont
 
 
 
 ############################# DEFINITION DES PARAMS ###########################
-timer = 30
+timer = 10000
 
 	# AMIBES
 N = 'normal'
@@ -34,11 +38,11 @@ V = 'vibration'
 D = 'diffusion'
 M = 'mort'
 
-tmangerMAX = 5 # temps pendant lequel l'amibe mange sur la case a 100.
+tmangerMAX = 5# temps pendant lequel l'amibe mange sur la case a 100.
 # Au bout de 30 sec, la grille est reinitialise, cad la case ou il y avait de la nourriture et remise a 1.
 # L'amibe se remet donc a bouger
 
-trechercheMAX = 5 # temps de recherche maximale de nourriture
+trechercheMAX = 100# temps de recherche maximale de nourriture
 
 n = 'nourriture'
 o = 'obstacles'
@@ -151,16 +155,19 @@ class Amibes :
 
 
 	### Methode qui permet de bouger aleatoirement sans etre dans les obstacles
+
 	def __bougerRDM(self, grille, xt, yt) :
+
 		a = randint(-1,1)
 		b = randint(-1,1)
-		newX = xt + a
-		newY = yt + b
-		if newX<0:
-			newX = newX + 2
+
+		newX = xt + a 
+		newY = yt + b 
+		if newX<0: 
+			newX = newX + 2 
 		if newX>len(grille)-1:
 			newX = newX - 2
-		if newY<0:
+		if newY<0: 
 			newY = newY + 2
 		if newY>len(grille[0])-1:
 			newY = newY - 2
@@ -303,6 +310,93 @@ class Envir:
 				if i>=0 and i<self.xmax and j>=0 and j<self.ymax :
 					self.grille[i][j] = 1
 
+######################################### INTERFACE ############################
+
+# On cree une fenetre, racine de notre interface
+root= Tk()
+root.title('Projet 3 BIM 2015')
+root['bg']='bisque'
+
+
+
+## On cree les differents frame ###
+## Je leur donne des couleurs pour pouvoir les differencier###  
+
+frame = Frame(root,width=300,height=600,bg="#CEF6F5")
+frame.pack(side=RIGHT,fill=Y)
+frame2 = Frame(root,width=200,height=10,bg="#CEF6F5")
+frame2.pack(side=TOP,fill=X)
+frame3 = Frame(root, bg="red",width=300, height=150)
+frame3.pack(side=BOTTOM, fill=BOTH, expand=1)
+
+#####ON REMPLI LES DIFFERENTS FRAME ##### 
+
+#####################################################
+#                     FRAME 					    #
+#####################################################
+
+## On les rempli avec les boutons 
+
+list = Listbox(frame)
+list.insert(END,'Nourriture')
+list.insert(END,'Stress')
+list.insert(END,'Famine')
+list.grid(row=8,column=1,padx=70,pady=10,sticky=W+E)
+#list.pack(side ="left")
+
+titre_liste = Label(frame,text="Etats des amibes",bg="#CEF6F5")
+titre_liste.grid(row=7,column=1,padx=70,pady=10,sticky=W+E)
+#titre_liste.pack(side="left")
+titre_liste.config(font=('trebuchet',15,'bold'))
+
+
+### Bouton du frame de droite qui est le frame 1 ####
+frame.grid_propagate(0)
+bouton1 =Button(frame, text='Nouvelle Partie')
+bouton1.grid(row=1000, column=0,columnspan=50,rowspan=10,sticky=W+E)
+#bouton1.pack(fill=X)
+bouton2 = Button(frame,text='Quitter',command=root.quit)
+bouton2.grid(row=1011,column=0,columnspan=50,rowspan=10,sticky=W+E)
+#bouton2.pack(fill=X)
+
+
+#####################################################
+#                     FRAME2 					    #
+#####################################################
+
+img = ImageTk.PhotoImage(Image.open("a.jpg"))
+panel = Label(frame2, image = img,bg="#CEF6F5")
+panel.pack(side = "top", fill = X,expand=1)
+
+# On cree un label (ligne de texte) souhaitant la bienvenue
+# Note : le premier parametre passe au constructeur de Label est notre
+# interface racine
+titre_fenetre = Label(frame2, text="Projet 3 BIM 2015 : Adaptation des amibes en condition de famine",bg="#CEF6F5")
+# On affiche le label dans la fenetre
+titre_fenetre.pack(side="top", fill=X)
+titre_fenetre.config(font=('trebuchet',15,'bold'))
+
+#####################################################
+#                     FRAME3     				    #
+#####################################################
+
+### CREATION DE LA ZONE GRAPHIQUE ####
+
+zone_dessin = Canvas(frame3,width=1000,height=500,background="green")
+#txt = zone_dessin.create_text(500,250,text='ZONE GRAPHIQUE',font="Trebuchet 16",fill='blue')
+zone_dessin.pack()
+#zone_dessin.create_rectangle(10,10,20,20,fill='pink')
+
+
+
+
+#layout = QVBoxLayout()
+#frame.setLayout(layout)
+
+#bouton_quitter = Button(frame2, text="Quitter", command=root.quit)
+#bouton_quitter.pack(side="bottom",padx=100,pady=100)
+
+ 
 
 class Popu:
 
@@ -322,9 +416,35 @@ print Env
 Ami = Amibes()
 print Ami
 
-for i in xrange(timer):
+for i in range(Env.h):
+	for j in range(Env.w):
+		if Env.grille[i][j] == 0:
+			zone_dessin.create_rectangle(i*pixel,j*pixel,(i*pixel)+pixel,(j*pixel)+pixel,fill='blue',outline="blue")
+		if Env.grille[i][j] ==100:
+			zone_dessin.create_rectangle(i*pixel,j*pixel,(i*pixel)+pixel,(j*pixel)+pixel,fill='red',outline="red")
+
+
+
+
+
+zone_dessin.create_rectangle(Ami.x * pixel,Ami.y * pixel,(Ami.x*pixel) + pixel,(Ami.y*pixel) + pixel,fill='pink')
+
+
+def update():
+	#if timer%10 == 0 :
+	zone_dessin.create_rectangle(Ami.x * pixel,Ami.y * pixel,(Ami.x*pixel) + pixel,(Ami.y*pixel) + pixel,fill="green",outline="green")
+		#zone_dessin = Canvas(frame3,width=1000,height=500,background="green")
+
 	Ami.bouger(Env)
 	print Ami
+	
+	zone_dessin.create_rectangle(Ami.x * pixel,Ami.y * pixel,(Ami.x*pixel) + pixel,(Ami.y*pixel) + pixel,fill='pink')
+	root.after(50,update)
+
+update()	
+root.mainloop()
+
+	
 
 print Env
 
