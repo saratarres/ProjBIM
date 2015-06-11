@@ -140,7 +140,7 @@ class Amibes :
 					self.x = val[0]
 					self.y = val[1]
 					self.trecherche += 1 #Si deplacement aleatoire, on augmente le temps de recherche de 1
-					self.stress(self.x,self.y)
+					self.stress(self.x,self.y,Envir)
 
 			else :
 				self.tmanger += 1
@@ -151,7 +151,7 @@ class Amibes :
 					self.bouger(Envir)
 
 		elif self.etat_actuel[0] == V:
-			self.stress(self.x,self.y)
+			self.stress(self.x,self.y,Envir)
 
 
 	### Methode qui permet de bouger aleatoirement sans etre dans les obstacles
@@ -176,7 +176,7 @@ class Amibes :
 		return (newX, newY)
 
 	### Methode qui va faire que l'amibe va rentrer dans un etat de stress
-	def stress(self,a,b):
+	def stress(self,a,b,Envir):
 		if (self.trecherche>trechercheMAX):
 			self.etat_actuel[0] = V
 			self.vibre(a,b,self.boole)
@@ -196,6 +196,7 @@ class Amibes :
 					self.x = a - 1
 				else:
 					self.x = a
+
 
 
 	### Methode de modification du gradient lorsqu'un amibe a atteint de la nourriture 
@@ -312,6 +313,19 @@ class Envir:
 				if i>=0 and i<self.xmax and j>=0 and j<self.ymax :
 					self.grille[i][j] = 1
 
+
+	def amibeStresseDiffusionGradient(self,a,b):
+		val = 1000 # Il faut que val vale plus que 114.
+		self.grille[a][b] = val
+		for V in xrange(1,self.xmax):
+			for i in xrange(a-V,a+V+1):
+				for j in xrange(b-V,b+V+1):
+					if i>=0 and i<self.xmax and j>=0 and j<self.ymax :
+						if self.grille[i][j] != 0 and self.grille[i][j] < val - V :
+							self.grille[i][j] = val - V
+
+
+
 # ######################################### INTERFACE ############################
 
 # # On cree une fenetre, racine de notre interface
@@ -406,35 +420,44 @@ class Popu:
 		self.n = n
 		self.tabamibes = [Amibes() for a in range(n)]
 
-	def panique(self):
-		for i in xrange(self.n):
-			if self.tabamibes[i].etat_actuel[0] == V:
-				for j in xrange(self.n):
-					if i!=j:
-						self.tabamibes[j].etat_actuel[0] = D
-						self.tabamibes[j].diffusionVersAmibeStresse(i)
+	def panique(self,Envir,i):
+		#for i in xrange(self.n):
+		if self.tabamibes[i].etat_actuel[0] == V : #or self.tabamibes[i].etat_actuel[0] == D
+			for j in xrange(self.n):
+				if i!=j:
+					self.tabamibes[j].etat_actuel[0] = D
+			self.diffusionVersAmibeStresse(Env,i)
 
-	def diffusionVersAmibeStresse(self,index):
-		vibX = self.tabamibes[index].x
-		vibY = self.tabamibes[index].y
-		for i in xrange(self.n):
-			if i!=index:
-				if self.tabamibes[i].x < vibX:
-					self.tabamibes[i].x += 1
-				elif self.tabamibes[i].x > vibX:
-					self.tabamibes[i].x -= 1
-				if self.tabamibes[i].y < vibY:
-					self.tabamibes[i].y += 1
-				elif self.tabamibes[i].y > vibY:
-					self.tabamibes[i].y -= 1				
+	def diffusionVersAmibeStresse(self,Envir,index):
+		Envir.amibeStresseDiffusionGradient(self.tabamibes[index].x,self.tabamibes[index].y)
+		for a in xrange(self.n):
+			if a != index:
+				xtemp = self.tabamibes[a].x
+				ytemp = self.tabamibes[a].y
+			
+				# on parcours le cercle autour de l'amibe
+				for ii in xrange(xtemp-1, xtemp+2):
+					for j in xrange(ytemp-1, ytemp+2):
+							# Le deplacement doit rester dans la grille 
+						if ii>=0 and ii<len(Envir.grille) and j>=0 and j<len(Envir.grille[0]) :
+								# On fait un if supplementaire pour ne pas qu'il s'eloigne horizontalement de l'amibe stressee
+							if self.tabamibes[a].y > self.tabamibes[index].y :
+								if Envir.grille[ii][j]>Envir.grille[xtemp][ytemp] :
+									xtemp = ii
+									ytemp = j
+							else :
+								if Envir.grille[ii][j]>=Envir.grille[xtemp][ytemp] :
+									xtemp = ii
+									ytemp = j	
 
+				self.tabamibes[a].x = xtemp
+				self.tabamibes[a].y = ytemp
 
 
 ##################################### MAIN ####################################
 
 
 #seed(0) # permet d'avoir toujours la meme grille 
-
 Env = Envir(xmax, ymax, PN)
 print Env
 
@@ -469,13 +492,25 @@ print Ami
 # update()	
 # root.mainloop()
 
-	
-
-print Env
 
 n = 10
 pop = Popu(n)
-for i in range(n):
-	print "L'amibe est en position (%d - %d) et est dans l'etat %s"%(pop.tabamibes[i].x, pop.tabamibes[i].y, pop.tabamibes[i].etat_actuel)
-	pop.tabamibes[i].bouger(Env)
-	pop.panique()
+
+for k in xrange(n):
+	print "L'amibe %d est en position (%d - %d) et est dans l'etat %s"%(k,pop.tabamibes[k].x, pop.tabamibes[k].y, pop.tabamibes[k].etat_actuel)
+
+## La boucle à faire sur un temps infini :
+# - Sur chaque amibe : BOUGER
+# - Sur la pop : PANIQUE
+for t in xrange(150):
+	for i in range(n):
+		print "L'amibe %d est en position (%d - %d) et est dans l'etat %s"%(i,pop.tabamibes[i].x, pop.tabamibes[i].y, pop.tabamibes[i].etat_actuel)
+		pop.tabamibes[i].bouger(Env)
+		pop.panique(Env,i)
+
+		
+print "\nApres 150 iterations"
+for j in xrange(n):
+	print "L'amibe %d est en position (%d - %d) et est dans l'etat %s"%(j,pop.tabamibes[j].x, pop.tabamibes[j].y, pop.tabamibes[j].etat_actuel)
+
+print Env
