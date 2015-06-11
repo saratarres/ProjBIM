@@ -38,11 +38,11 @@ V = 'vibration'
 D = 'diffusion'
 M = 'mort'
 
-tmangerMAX = 5# temps pendant lequel l'amibe mange sur la case a 100.
+tmangerMAX = 50# temps pendant lequel l'amibe mange sur la case a 100.
 # Au bout de 30 sec, la grille est reinitialise, cad la case ou il y avait de la nourriture et remise a 1.
 # L'amibe se remet donc a bouger
 
-trechercheMAX = 100# temps de recherche maximale de nourriture
+trechercheMAX = 500# temps de recherche maximale de nourriture
 
 n = 'nourriture'
 o = 'obstacles'
@@ -55,15 +55,15 @@ F = 'famine'
 # x est en ordonnee !!
 # y est en abscisse !!
 # (0,0) est en haut a gauche
-xmax = 150 #!!! taille de la grille (il faut qua ca soit un multiple de 5) #X
-ymax = 80 #!!! taille de la grille (il faut qua ca soit un multiple de 5) #Y
+xmax = 960 #!!! taille de la grille (il faut qua ca soit un multiple de 5) #X
+ymax = 400 #!!! taille de la grille (il faut qua ca soit un multiple de 5) #Y
 pixel = 10
 
 # Definition des params de la grille
 nbo = 10 # nombre d'obstacle dans la grille
-nbn_PN = 6 # nombre de nourriture dans le mode PN
-nbn_S = 2 # nombre de nourriture dans le mode S
-nbn_F = 0 # nombre de nourriture dans le mode F
+nbn_PN = 15# nombre de nourriture dans le mode PN
+nbA = 200
+l = 0
 
 
 
@@ -73,9 +73,6 @@ nbn_F = 0 # nombre de nourriture dans le mode F
 class Amibes : 
 
 	def __init__(self):
-
-		#Rayon de perception )= rp
-		#self.rp= r
 
 		#Position x et y initial de l'amibe 
 		self.x = randint(0,xmax/pixel-1)
@@ -136,7 +133,7 @@ class Amibes :
 					self.y = ytemp
 
 				else :
-					val = self.__bougerRDM(Envir.grille, xtemp, ytemp)
+					val = self.__bougerRDM(Env.grille, xtemp, ytemp)
 					self.x = val[0]
 					self.y = val[1]
 					self.trecherche += 1 #Si deplacement aleatoire, on augmente le temps de recherche de 1
@@ -172,7 +169,9 @@ class Amibes :
 		if newY>len(grille[0])-1:
 			newY = newY - 2
 		if grille[newX][newY] == 0:
-			self.__bougerRDM(grille, xt, yt)
+			newX = xt
+			newY = yt
+			#self.__bougerRDM(grille, xt, yt)
 		return (newX, newY)
 
 	### Methode qui va faire que l'amibe va rentrer dans un etat de stress
@@ -196,16 +195,15 @@ class Amibes :
 			else:
 				self.x = a
 
-	### Methode de modification du gradient lorsqu'un amibe a atteint de la nourriture 
-	### Mais je ne suis pas sur du tout que c'est ca dont on avait parler
-	### Car je vois pas comment mettre en place le rayon de perception la dedans
 
-	def modif_gradient (self,grille):
-		if (grille[self.x][self.y] == n):
-			grille[self.x +1][self.y]=1000
-			grille[self.x +2][self.y]=1000
-			grille[self.x +3][self.y]=1000
+################################# POPU ########################################
 
+
+class Popu:
+
+	def __init__(self,n):
+		self.n = n
+		self.tabamibes = [Amibes() for a in range(n)]
 
 
 ################################# ENVIRONNEMENT ###############################
@@ -307,8 +305,93 @@ class Envir:
 		for i in xrange(a-2, a+3):
 			for j in xrange(b-2, b+3):
 				# La diffusion doit rester dans la grille 
-				if i>=0 and i<self.xmax and j>=0 and j<self.ymax :
+				if i>=0 and i<self.xmax and j>=0 and j<self.ymax  and self.grille[i][j]!=0:
 					self.grille[i][j] = 1
+
+
+
+class amibes2 : 
+
+	def __init__(self,a):
+		self.x = a
+
+		if a == 0 :
+			self.b = 1
+		else:
+			self.b =0
+			
+		self.y = ymax
+		self.stop = False 
+
+		self.index = 1
+
+	
+	def bouger (self):
+		if self.x > (xmax/2) and self.y == ymax:
+			#print '1'
+			self.x -= 10
+			self.y = self.y
+
+		elif self.x < (xmax/2) and self.y== ymax:
+			#print '2'
+
+			self.x +=10
+			self.y = self.y
+			
+
+
+		elif self.x == xmax/2 and self.y > ymax/2 :
+			#print '3'	
+			self.x = self.x
+			self.y -= 10 	
+			
+			
+		
+		elif self.y == ymax/2 and self.x == xmax/2:
+			#print '4'
+			if self.b==0 :
+				self.x -=10
+				self.y = self.y
+				
+				
+			else : 
+				self.x +=10
+				self.y = self.y
+				
+				
+
+		elif self.y == ymax/2 and self.x > xmax/4 and self.x<xmax/2:
+			#print '5'
+			self.x -=10
+			self.y = self.y
+
+		elif self.y == ymax/2 and self.x > xmax/2 and self.x<3*xmax/4:
+			#print '6'
+			self.x +=10
+			self.y = self.y
+
+		elif self.y <= ymax/2  and self.y > ymax/4:
+			#print '7'
+			if self.x == xmax/4 or self.x == 3*xmax/4:
+				self.x = self.x
+				self.y -=10
+
+
+		elif self.y == ymax/4 and self.x >= xmax/4 and self.x< xmax/2:
+			#print '8'
+			self.x +=10
+			self.y = self.y
+
+		elif self.y == ymax/4 and self.x <= 3*xmax/4 and self.x> xmax/2:
+			#print '8bis'
+			self.x -=10
+			self.y = self.y
+			
+		if self.y == ymax/4 and self.x == xmax/2:
+			self.stop = True 
+			#print 'YOLO'
+
+
 
 ######################################### INTERFACE ############################
 
@@ -326,8 +409,10 @@ frame = Frame(root,width=300,height=600,bg="#CEF6F5")
 frame.pack(side=RIGHT,fill=Y)
 frame2 = Frame(root,width=200,height=10,bg="#CEF6F5")
 frame2.pack(side=TOP,fill=X)
-frame3 = Frame(root, bg="red",width=300, height=150)
-frame3.pack(side=BOTTOM, fill=BOTH, expand=1)
+#frame3 = Frame(root, bg="red",width=800, height=500)
+#frame3.pack(side=BOTTOM, fill=BOTH, expand=1)
+frame4 = Frame(root, bg="red",width=800, height=500)
+frame4.pack(side=BOTTOM, fill=BOTH, expand=1)
 
 #####ON REMPLI LES DIFFERENTS FRAME ##### 
 
@@ -380,75 +465,142 @@ titre_fenetre.config(font=('trebuchet',15,'bold'))
 #                     FRAME3     				    #
 #####################################################
 
-### CREATION DE LA ZONE GRAPHIQUE ####
+### CREATION DE LA ZONE GRAPHIQUE  AMIBES MANGENT ET STRESSENT ####
 
-zone_dessin = Canvas(frame3,width=1000,height=500,background="green")
+#zone_dessin = Canvas(frame3,width=1000,height=500,background="green")
+
+#zone_dessin.pack()
+
+
+######################################################
+### CREATION ZONE GRAPHIQUE AMIBES SPORULENT
+
+zone_spore = Canvas(frame4,width=1000,height=500,background="green")
 #txt = zone_dessin.create_text(500,250,text='ZONE GRAPHIQUE',font="Trebuchet 16",fill='blue')
-zone_dessin.pack()
+
 #zone_dessin.create_rectangle(10,10,20,20,fill='pink')
-
-
-
-
-#layout = QVBoxLayout()
-#frame.setLayout(layout)
-
-#bouton_quitter = Button(frame2, text="Quitter", command=root.quit)
-#bouton_quitter.pack(side="bottom",padx=100,pady=100)
+zone_spore.pack()
 
  
-
-class Popu:
-
-	def __init__(self,n):
-		self.n = n
-		self.tabamibes = [Amibes() for a in range(n)]
-
 
 ##################################### MAIN ####################################
 
 
 #seed(0) # permet d'avoir toujours la meme grille 
-
+#zone_spore.create_rectangle(0,400,10,410,fill="pink",outline="pink")
 Env = Envir(xmax, ymax, PN)
 print Env
 
 Ami = Amibes()
 print Ami
 
-for i in range(Env.h):
-	for j in range(Env.w):
-		if Env.grille[i][j] == 0:
-			zone_dessin.create_rectangle(i*pixel,j*pixel,(i*pixel)+pixel,(j*pixel)+pixel,fill='blue',outline="blue")
-		if Env.grille[i][j] ==100:
-			zone_dessin.create_rectangle(i*pixel,j*pixel,(i*pixel)+pixel,(j*pixel)+pixel,fill='red',outline="red")
+pop = Popu(10)
+
+#for i in range(Env.xmax):
+#	for j in range(Env.ymax):
+#		if Env.grille[i][j] == 0:
+#			zone_dessin.create_rectangle(i*pixel,j*pixel,(i*pixel)+pixel,(j*pixel)+pixel,fill='blue',outline="blue")
+#		if Env.grille[i][j] ==100:
+#			zone_dessin.create_rectangle(i*pixel,j*pixel,(i*pixel)+pixel,(j*pixel)+pixel,fill='red',outline="red")
+
+#for i in range(len(pop.tabamibes)):
+#	zone_dessin.create_rectangle(pop.tabamibes[i].x * pixel,pop.tabamibes[i].y * pixel,(pop.tabamibes[i].x*pixel) + pixel,(pop.tabamibes[i].y*pixel) + pixel,fill='pink')
+
+pop2 = []
+for  i in xrange(nbA):
+	if i%2 == 0 :
+		pop2.append(amibes2(0))
+	else :
+		pop2.append(amibes2(xmax))
 
 
 
+#zone_spore.create_rectangle(pop2[0].x,pop2[0].y ,pop2[0].x + pixel,pop2[0].y + pixel,fill="pink",outline="pink")
+#print pop2[1].x, pop2[1].y
 
-
-zone_dessin.create_rectangle(Ami.x * pixel,Ami.y * pixel,(Ami.x*pixel) + pixel,(Ami.y*pixel) + pixel,fill='pink')
-
+#zone_spore.pack()
 
 def update():
-	#if timer%10 == 0 :
-	zone_dessin.create_rectangle(Ami.x * pixel,Ami.y * pixel,(Ami.x*pixel) + pixel,(Ami.y*pixel) + pixel,fill="green",outline="green")
-		#zone_dessin = Canvas(frame3,width=1000,height=500,background="green")
+	#if l < 100 :
+		#if timer%10 == 0 :
+	#	for i in range(len(pop.tabamibes)):
+	#		zone_dessin.create_rectangle(pop.tabamibes[i].x * pixel,pop.tabamibes[i].y * pixel,(pop.tabamibes[i].x*pixel) + pixel,(pop.tabamibes[i].y*pixel) + pixel,fill="green",outline="green")
+			#zone_dessin = Canvas(frame3,width=1000,height=500,background="green")
 
-	Ami.bouger(Env)
-	print Ami
+	#		pop.tabamibes[i].bouger(Env)
+			#print Ami
+		
+	#		zone_dessin.create_rectangle(pop.tabamibes[i].x * pixel,pop.tabamibes[i].y * pixel,(pop.tabamibes[i].x*pixel) + pixel,(pop.tabamibes[i].y*pixel) + pixel,fill='pink')
+	#	l += 1
+	#	root.after(50,update)
+	#else :
 	
-	zone_dessin.create_rectangle(Ami.x * pixel,Ami.y * pixel,(Ami.x*pixel) + pixel,(Ami.y*pixel) + pixel,fill='pink')
-	root.after(50,update)
 
-update()	
+	#i=1
+	j = 0
+	k = 0
+	temp=0
+	if (pop2[0].index < nbA):
+		#while i < nbA :
+		for j in xrange(pop2[0].index+1) :
+			print pop2[0].index
+			
+			#print pop2[j].x, pop2[j].y
+			#zone_spore.create_rectangle(pop2[j].x ,pop2[j].y ,(pop2[j].x) + pixel,(pop2[j].y) + pixel,fill="green",outline="green")
+			pop2[j].bouger()
+			
+			#print pop2[j].x, pop2[j].y
+			zone_spore.create_rectangle(pop2[j].x ,pop2[j].y ,(pop2[j].x) + pixel,(pop2[j].y) + pixel,fill="pink",outline="pink")
+
+			if pop2[0].stop == True:
+				break
+
+
+		pop2[0].index +=1
+
+		
+		
+		j=0
+
+	if (pop2[0].index  == nbA):
+		print 'Je suis dans la boucle'
+		for k in xrange(nbA):
+			#zone_spore.create_rectangle(pop2[k].x ,pop2[k].y ,(pop2[k].x) + pixel,(pop2[k].y) + pixel,fill="green",outline="green")
+
+			pop2[k].bouger()
+			zone_spore.create_rectangle(pop2[k].x,pop2[k].y ,(pop2[k].x) + pixel,(pop2[k].y) + pixel,fill="pink",outline="pink")
+
+			if pop2[0].stop == True:
+				break
+
+	
+
+
+	root.after(50,update)		
+
+
+update()
 root.mainloop()
 
-	
+### AMIBES SPORULENT
 
-print Env
 
-n = 10
-pop = Popu(n)
-for i in range(n):
-	print pop.tabamibes[i].x,pop.tabamibes[i].y
+
+
+#print Env
+
+#print Env
+
+#n = 10
+#pop = Popu(n)
+#for i in range(n):
+#	print pop.tabamibes[i].x,pop.tabamibes[i].y
+
+
+
+
+
+
+
+
+
