@@ -22,10 +22,10 @@
 ## et elle va reprendre son chemin aleatoire. etc etc
 
 from random import*
-from Tkinter import *
-from PIL import ImageTk, Image
-from PyQt4 import QtGui, QtCore
-import tkFont
+# from Tkinter import *
+# from PIL import ImageTk, Image
+# from PyQt4 import QtGui, QtCore
+# import tkFont
 
 
 
@@ -137,7 +137,7 @@ class Amibes :
 					self.x = val[0]
 					self.y = val[1]
 					self.trecherche += 1 #Si deplacement aleatoire, on augmente le temps de recherche de 1
-					self.stress(self.x,self.y)
+					self.stress(self.x,self.y,Envir)
 
 			else :
 				self.tmanger += 1
@@ -148,7 +148,7 @@ class Amibes :
 					self.bouger(Envir)
 
 		elif self.etat_actuel[0] == V:
-			self.stress(self.x,self.y)
+			self.stress(self.x,self.y,Envir)
 
 
 	### Methode qui permet de bouger aleatoirement sans etre dans les obstacles
@@ -175,7 +175,7 @@ class Amibes :
 		return (newX, newY)
 
 	### Methode qui va faire que l'amibe va rentrer dans un etat de stress
-	def stress(self,a,b):
+	def stress(self,a,b,Envir):
 		if (self.trecherche>trechercheMAX):
 			self.etat_actuel[0] = V
 			self.vibre(a,b,self.boole)
@@ -184,16 +184,19 @@ class Amibes :
 			else:
 				self.boole=True
 	def vibre(self,a,b,vrai):
-		if vrai==True:
-			if a < xmax/pixel - 1:
-				self.x = a + 1
+		if self.etat_actuel[0] != D:
+			if vrai==True:
+				if a < xmax/pixel - 1:
+					self.x = a + 1
+				else:
+					self.x = a
 			else:
-				self.x = a
-		else:
-			if a > 1:
-				self.x = a - 1
-			else:
-				self.x = a
+				if a > 1:
+					self.x = a - 1
+				else:
+					self.x = a
+
+
 
 
 ################################# POPU ########################################
@@ -308,6 +311,15 @@ class Envir:
 				if i>=0 and i<self.xmax and j>=0 and j<self.ymax  and self.grille[i][j]!=0:
 					self.grille[i][j] = 1
 
+	def amibeStresseDiffusionGradient(self,a,b):
+		val = 1000 # Il faut que val vale plus que 114.
+		self.grille[a][b] = val
+		for V in xrange(1,self.xmax):
+			for i in xrange(a-V,a+V+1):
+				for j in xrange(b-V,b+V+1):
+					if i>=0 and i<self.xmax and j>=0 and j<self.ymax :
+						if self.grille[i][j] != 0 and self.grille[i][j] < val - V :
+							self.grille[i][j] = val - V
 
 
 class amibes2 : 
@@ -393,17 +405,13 @@ class amibes2 :
 
 
 
-######################################### INTERFACE ############################
+# ######################################### INTERFACE ############################
 
-# On cree une fenetre, racine de notre interface
-root= Tk()
-root.title('Projet 3 BIM 2015')
-root['bg']='bisque'
+# # On cree une fenetre, racine de notre interface
+# root= Tk()
+# root.title('Projet 3 BIM 2015')
+# root['bg']='bisque'
 
-
-
-## On cree les differents frame ###
-## Je leur donne des couleurs pour pouvoir les differencier###  
 
 frame = Frame(root,width=300,height=600,bg="#CEF6F5")
 frame.pack(side=RIGHT,fill=Y)
@@ -414,11 +422,10 @@ frame2.pack(side=TOP,fill=X)
 frame4 = Frame(root, bg="red",width=800, height=500)
 frame4.pack(side=BOTTOM, fill=BOTH, expand=1)
 
-#####ON REMPLI LES DIFFERENTS FRAME ##### 
 
-#####################################################
-#                     FRAME 					    #
-#####################################################
+# #####################################################
+# #                     FRAME 					    #
+# #####################################################
 
 ## On les rempli avec les boutons 
 
@@ -445,11 +452,11 @@ bouton2.grid(row=1011,column=0,columnspan=50,rowspan=10,sticky=W+E)
 #bouton2.pack(fill=X)
 
 
-#####################################################
-#                     FRAME2 					    #
-#####################################################
+# #####################################################
+# #                     FRAME2 					    #
+# #####################################################
 
-img = ImageTk.PhotoImage(Image.open("a.jpg"))
+img = ImageTk.PhotoImage(Image.open("a.png"))
 panel = Label(frame2, image = img,bg="#CEF6F5")
 panel.pack(side = "top", fill = X,expand=1)
 
@@ -461,16 +468,16 @@ titre_fenetre = Label(frame2, text="Projet 3 BIM 2015 : Adaptation des amibes en
 titre_fenetre.pack(side="top", fill=X)
 titre_fenetre.config(font=('trebuchet',15,'bold'))
 
-#####################################################
-#                     FRAME3     				    #
-#####################################################
+# #####################################################
+# #                     FRAME3     				    #
+# #####################################################
 
-### CREATION DE LA ZONE GRAPHIQUE  AMIBES MANGENT ET STRESSENT ####
+# ### CREATION DE LA ZONE GRAPHIQUE ###
 
-#zone_dessin = Canvas(frame3,width=1000,height=500,background="green")
-
-#zone_dessin.pack()
-
+# zone_dessin = Canvas(frame3,width=1000,height=500,background="green")
+# #txt = zone_dessin.create_text(500,250,text='ZONE GRAPHIQUE',font="Trebuchet 16",fill='blue')
+# zone_dessin.pack()
+# #zone_dessin.create_rectangle(10,10,20,20,fill='pink')
 
 ######################################################
 ### CREATION ZONE GRAPHIQUE AMIBES SPORULENT
@@ -481,18 +488,67 @@ zone_spore = Canvas(frame4,width=1000,height=500,background="green")
 #zone_dessin.create_rectangle(10,10,20,20,fill='pink')
 zone_spore.pack()
 
+
+
+#layout = QVBoxLayout()
+#frame.setLayout(layout)
+
+#bouton_quitter = Button(frame2, text="Quitter", command=root.quit)
+#bouton_quitter.pack(side="bottom",padx=100,pady=100)
+
  
+
+class Popu:
+
+	def __init__(self,n):
+		self.n = n
+		self.tabamibes = [Amibes() for a in range(n)]
+
+	def panique(self,Envir,i):
+		#for i in xrange(self.n):
+		if self.tabamibes[i].etat_actuel[0] == V : #or self.tabamibes[i].etat_actuel[0] == D
+			for j in xrange(self.n):
+				if i!=j:
+					self.tabamibes[j].etat_actuel[0] = D
+			self.diffusionVersAmibeStresse(Env,i)
+
+	def diffusionVersAmibeStresse(self,Envir,index):
+		Envir.amibeStresseDiffusionGradient(self.tabamibes[index].x,self.tabamibes[index].y)
+		for a in xrange(self.n):
+			if a != index:
+				xtemp = self.tabamibes[a].x
+				ytemp = self.tabamibes[a].y
+			
+				# on parcours le cercle autour de l'amibe
+				for ii in xrange(xtemp-1, xtemp+2):
+					for j in xrange(ytemp-1, ytemp+2):
+							# Le deplacement doit rester dans la grille 
+						if ii>=0 and ii<len(Envir.grille) and j>=0 and j<len(Envir.grille[0]) :
+								# On fait un if supplementaire pour ne pas qu'il s'eloigne horizontalement de l'amibe stressee
+							if self.tabamibes[a].y > self.tabamibes[index].y :
+								if Envir.grille[ii][j]>Envir.grille[xtemp][ytemp] :
+									xtemp = ii
+									ytemp = j
+							else :
+								if Envir.grille[ii][j]>=Envir.grille[xtemp][ytemp] :
+									xtemp = ii
+									ytemp = j	
+
+				self.tabamibes[a].x = xtemp
+				self.tabamibes[a].y = ytemp
+
 
 ##################################### MAIN ####################################
 
 
 #seed(0) # permet d'avoir toujours la meme grille 
-#zone_spore.create_rectangle(0,400,10,410,fill="pink",outline="pink")
+
 Env = Envir(xmax, ymax, PN)
 print Env
 
 Ami = Amibes()
 print Ami
+
 
 pop = Popu(10)
 
@@ -512,8 +568,6 @@ for  i in xrange(nbA):
 		pop2.append(amibes2(0))
 	else :
 		pop2.append(amibes2(xmax))
-
-
 
 #zone_spore.create_rectangle(pop2[0].x,pop2[0].y ,pop2[0].x + pixel,pop2[0].y + pixel,fill="pink",outline="pink")
 #print pop2[1].x, pop2[1].y
@@ -585,22 +639,25 @@ root.mainloop()
 ### AMIBES SPORULENT
 
 
+n = 10
+pop = Popu(n)
 
+for k in xrange(n):
+	print "L'amibe %d est en position (%d - %d) et est dans l'etat %s"%(k,pop.tabamibes[k].x, pop.tabamibes[k].y, pop.tabamibes[k].etat_actuel)
 
-#print Env
+## La boucle à faire sur un temps infini :
+# - Sur chaque amibe : BOUGER
+# - Sur la pop : PANIQUE
+for t in xrange(150):
+	for i in range(n):
+		print "L'amibe %d est en position (%d - %d) et est dans l'etat %s"%(i,pop.tabamibes[i].x, pop.tabamibes[i].y, pop.tabamibes[i].etat_actuel)
+		pop.tabamibes[i].bouger(Env)
+		pop.panique(Env,i)
 
-#print Env
+		
+print "\nApres 150 iterations"
+for j in xrange(n):
+	print "L'amibe %d est en position (%d - %d) et est dans l'etat %s"%(j,pop.tabamibes[j].x, pop.tabamibes[j].y, pop.tabamibes[j].etat_actuel)
 
-#n = 10
-#pop = Popu(n)
-#for i in range(n):
-#	print pop.tabamibes[i].x,pop.tabamibes[i].y
-
-
-
-
-
-
-
-
+print Env
 
